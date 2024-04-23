@@ -38,7 +38,13 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
+    /**
+     * 根据id查询店铺信息
+     * @param id
+     * @return
+     */
     @Override
+    // TODO 封装redis工具类
     public Result queryById(Long id) {
         // 缓存穿透
         // Shop shop = queryWithPassThrough(id);
@@ -89,9 +95,12 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
             if (!isLock) {
                 // 4.3.失败，则休眠并重试
                 Thread.sleep(LOCK_SHOP_TTL);
+                return queryWithMutex(id);
             }
             // 4.4.成功，根据id查询数据库
             shop = getById(id);
+            // 模拟重建的延时
+            Thread.sleep(200);
             // 5.查询数据库不存在
             if (shop == null) {
                 // 将空值写入Redis
@@ -202,9 +211,10 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
      * @param id
      * @param expireSeconds
      */
-    public void saveShop2Redis(Long id, Long expireSeconds) {
+    public void saveShop2Redis(Long id, Long expireSeconds) throws InterruptedException {
         // 1.查询店铺数据
         Shop shop = getById(id);
+        Thread.sleep(200);
         // 2.封装逻辑过期时间
         RedisData redisData = new RedisData();
         redisData.setData(shop);
