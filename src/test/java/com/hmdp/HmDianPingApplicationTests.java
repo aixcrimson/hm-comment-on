@@ -41,6 +41,10 @@ class HmDianPingApplicationTests {
         System.out.println("time = " + (end - begin));
     }
 
+    /**
+     * 将带有逻辑过期时间的测试数据写入redis
+     * @throws InterruptedException
+     */
     @Test
     void testSaveShop() throws InterruptedException {
         shopService.saveShop2Redis(1L,10L);
